@@ -9,6 +9,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
+@RequestMapping(value = "/api/guitars")
 public class GuitarController extends Controller {
 
     private final GuitarService service;
@@ -17,19 +18,19 @@ public class GuitarController extends Controller {
         this.service = service;
     }
 
-    @GetMapping(value = "/api/guitars")
+    @GetMapping
     public @ResponseBody
     List<Guitar> getAll() {
         return this.service.getAll();
     }
 
-    @GetMapping(value = "/api/guitars/{id}")
+    @GetMapping(value = "/{id}")
     public @ResponseBody
     Guitar getOne(@PathVariable long id) {
         return this.service.getOne(id);
     }
 
-    @DeleteMapping(value = "/api/guitars/{id}")
+    @DeleteMapping(value = "/{id}")
     public @ResponseBody
     ResponseEntity<?> deleteOne(@PathVariable long id) {
         if (this.service.deleteOne(id)) {
@@ -38,13 +39,13 @@ public class GuitarController extends Controller {
         return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
     }
 
-    @PutMapping(value = "/api/guitars/{id}")
+    @PutMapping(value = "/{id}")
     public @ResponseBody
     Guitar updateOne(@RequestBody String json, @PathVariable long id) {
         return this.service.updateOne(this.jsonToObject(json, Guitar.class), id);
     }
 
-    @PostMapping(value = "/api/guitars")
+    @PostMapping()
     public @ResponseBody
     Guitar makeOne(@RequestBody String json) {
         return this.service.makeOne(this.jsonToObject(json, Guitar.class));
