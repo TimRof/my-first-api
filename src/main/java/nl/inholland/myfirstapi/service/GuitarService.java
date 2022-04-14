@@ -9,7 +9,7 @@ import java.util.List;
 @Service
 public class GuitarService {
 
-    private List<Guitar> guitars = new ArrayList<>();
+    private final List<Guitar> guitars = new ArrayList<>();
 
     public GuitarService() {
         this.guitars.add(new Guitar(1, "Gibson", "Les Paul"));
