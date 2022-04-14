@@ -41,13 +41,13 @@ public class GuitarController extends Controller {
 
     @PutMapping(value = "/{id}")
     public @ResponseBody
-    Guitar updateOne(@RequestBody String json, @PathVariable long id) {
-        return this.service.updateOne(this.jsonToObject(json, Guitar.class), id);
+    Guitar updateOne(@RequestBody Guitar guitar, @PathVariable long id) {
+        return this.service.updateOne(guitar, id);
     }
 
     @PostMapping()
     public @ResponseBody
-    Guitar makeOne(@RequestBody String json) {
-        return this.service.makeOne(this.jsonToObject(json, Guitar.class));
+    Guitar makeOne(@RequestBody Guitar guitar) {
+        return this.service.makeOne(guitar);
     }
 }
