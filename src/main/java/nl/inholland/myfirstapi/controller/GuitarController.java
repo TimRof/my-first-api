@@ -7,6 +7,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Optional;
 
 @RestController
 @RequestMapping(value = "/api/guitars")
@@ -26,23 +27,33 @@ public class GuitarController extends Controller {
 
     @GetMapping(value = "/{id}")
     public @ResponseBody
-    Guitar getOne(@PathVariable long id) {
-        return this.service.getOne(id);
+    ResponseEntity<?> getOne(@PathVariable long id) {
+        Optional<Guitar> guitar = this.service.getOne(id);
+        if (guitar.isPresent()) {
+            return ResponseEntity.status(HttpStatus.CREATED).body(guitar);
+        }
+        return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
     }
 
     @DeleteMapping(value = "/{id}")
     public @ResponseBody
     ResponseEntity<?> deleteOne(@PathVariable long id) {
-        if (this.service.deleteOne(id)) {
-            return new ResponseEntity<>(HttpStatus.OK);
+        try {
+            this.service.deleteOne(id);
+            return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+        } catch (Exception e) {
+            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
         }
-        return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
     }
 
     @PutMapping(value = "/{id}")
     public @ResponseBody
-    Guitar updateOne(@RequestBody Guitar guitar, @PathVariable long id) {
-        return this.service.updateOne(guitar, id);
+    ResponseEntity<?> updateOne(@RequestBody Guitar guitar, @PathVariable long id) {
+        Guitar _guitar = this.service.updateOne(guitar, id);
+        if (_guitar != null) {
+            return ResponseEntity.status(HttpStatus.CREATED).body(_guitar);
+        }
+        return new ResponseEntity<>(HttpStatus.NOT_FOUND);
     }
 
     @PostMapping()

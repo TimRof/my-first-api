@@ -1,7 +1,14 @@
 package nl.inholland.myfirstapi.model;
 
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.Id;
+
+@Entity
 public class Guitar {
 
+    @Id
+    @GeneratedValue
     private long id;
     private String brand;
     private String model;
@@ -12,6 +19,14 @@ public class Guitar {
         this.model = model;
     }
 
+    public Guitar(String brand, String model) {
+        this.brand = brand;
+        this.model = model;
+    }
+
+    public Guitar() {
+
+    }
 
     public long getId() {
         return id;

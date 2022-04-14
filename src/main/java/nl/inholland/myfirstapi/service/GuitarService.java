@@ -1,50 +1,47 @@
 package nl.inholland.myfirstapi.service;
 
 import nl.inholland.myfirstapi.model.Guitar;
+import nl.inholland.myfirstapi.repository.GuitarRepository;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 public class GuitarService {
 
-    private final List<Guitar> guitars = new ArrayList<>();
+    GuitarRepository guitarRepository;
 
-    public GuitarService() {
-        this.guitars.add(new Guitar(1, "Gibson", "Les Paul"));
-        this.guitars.add(new Guitar(2, "Fender", "Vintera"));
+    public GuitarService(GuitarRepository guitarRepository) {
+        this.guitarRepository = guitarRepository;
+        guitarRepository.save(new Guitar("Gibson", "Les Paul"));
+        guitarRepository.save(new Guitar("Fender", "Vintera"));
     }
 
     public List<Guitar> getAll() {
-        return this.guitars;
+        return this.guitarRepository.findAll();
     }
 
-    public Guitar getOne(long id) {
-        return this.guitars.stream().filter(g -> g.getId() == id).findFirst().orElse(null);
+    public Optional<Guitar> getOne(long id) {
+        return this.guitarRepository.findById(id);
     }
 
     public Guitar makeOne(Guitar guitar) {
-        guitar.setId(this.guitars.size() + 1);
-        this.guitars.add(guitar);
-
-        return this.getOne(guitar.getId());
+        return this.guitarRepository.save(guitar);
     }
 
     public Guitar updateOne(Guitar guitar, long id) {
-        guitar.setId(id);
-        this.guitars.removeIf(g -> g.getId() == id);
-        this.guitars.add(guitar);
-
-        return this.getOne(guitar.getId());
+        Optional<Guitar> guitarObj = this.getOne(id);
+        if (guitarObj.isPresent()) {
+            Guitar _guitar = guitarObj.get();
+            _guitar.setBrand(guitar.getBrand());
+            _guitar.setModel(guitar.getModel());
+            return this.guitarRepository.save(_guitar);
+        }
+        return null;
     }
 
-    public boolean deleteOne(long id) {
-        try {
-            this.guitars.removeIf(g -> g.getId() == id);
-            return true;
-        } catch (Exception e) {
-            return false;
-        }
+    public void deleteOne(long id) {
+        this.guitarRepository.deleteById(id);
     }
 }
