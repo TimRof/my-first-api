@@ -2,6 +2,9 @@ package nl.inholland.myfirstapi.controller;
 
 import nl.inholland.myfirstapi.exception.ResourceNotFoundException;
 import nl.inholland.myfirstapi.model.Guitar;
+import nl.inholland.myfirstapi.model.dto.DTOEntity;
+import nl.inholland.myfirstapi.model.dto.guitar.GuitarCreateDTO;
+import nl.inholland.myfirstapi.model.dto.guitar.GuitarUpdateDTO;
 import nl.inholland.myfirstapi.service.GuitarService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -14,6 +17,9 @@ import java.util.List;
 public class GuitarController extends Controller
 {
 
+    private static final String RESOURCE_NOT_FOUND_1 = "Guitar with id: ";
+    private static final String RESOURCE_NOT_FOUND_2 = " not found";
+
     private final GuitarService service;
 
     public GuitarController(GuitarService service)
@@ -25,7 +31,6 @@ public class GuitarController extends Controller
     public @ResponseBody
     List<Guitar> getAll()
     {
-
         return this.service.getAll();
     }
 
@@ -34,40 +39,40 @@ public class GuitarController extends Controller
     ResponseEntity<Guitar> getOne(@PathVariable long id)
     {
         Guitar guitar = this.service.getOne(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Guitar with id: " + id + " not found"));
+                .orElseThrow(() -> new ResourceNotFoundException(RESOURCE_NOT_FOUND_1 + id + RESOURCE_NOT_FOUND_2));
         return new ResponseEntity<>(guitar, HttpStatus.OK);
     }
 
     @DeleteMapping(value = "/{id}")
     public @ResponseBody
-    ResponseEntity<Guitar> deleteOne(@PathVariable long id)
+    ResponseEntity<HttpStatus> deleteOne(@PathVariable long id)
     {
         try
         {
             this.service.deleteOne(id);
-            return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+            return new ResponseEntity<>(HttpStatus.OK);
         } catch (Exception e)
         {
-            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+            throw new ResourceNotFoundException(RESOURCE_NOT_FOUND_1 + id + RESOURCE_NOT_FOUND_2);
         }
     }
 
     @PutMapping(value = "/{id}")
     public @ResponseBody
-    ResponseEntity<Guitar> updateOne(@RequestBody Guitar guitar, @PathVariable long id)
+    ResponseEntity<DTOEntity> updateOne(@RequestBody GuitarUpdateDTO guitarUpdateDTO, @PathVariable long id)
     {
-        Guitar newGuitar = this.service.updateOne(guitar, id);
-        if (newGuitar == null)
+        DTOEntity newGuitarUpdateDTO = this.service.updateOne(guitarUpdateDTO, id);
+        if (newGuitarUpdateDTO == null)
         {
-            throw new ResourceNotFoundException("Guitar with id: " + id + " not found");
+            throw new ResourceNotFoundException(RESOURCE_NOT_FOUND_1 + id + RESOURCE_NOT_FOUND_2);
         }
-        return ResponseEntity.status(HttpStatus.CREATED).body(newGuitar);
+        return ResponseEntity.status(HttpStatus.CREATED).body(newGuitarUpdateDTO);
     }
 
     @PostMapping()
     public @ResponseBody
-    Guitar makeOne(@RequestBody Guitar guitar)
+    ResponseEntity<DTOEntity> createOne(@RequestBody GuitarCreateDTO guitarCreateDTO)
     {
-        return this.service.makeOne(guitar);
+        return ResponseEntity.status(HttpStatus.CREATED).body(this.service.createOne(guitarCreateDTO));
     }
 }
