@@ -1,5 +1,6 @@
 package nl.inholland.myfirstapi.service;
 
+import nl.inholland.myfirstapi.exception.ResourceNotFoundException;
 import nl.inholland.myfirstapi.model.Guitar;
 import nl.inholland.myfirstapi.model.dto.DTOEntity;
 import nl.inholland.myfirstapi.model.dto.guitar.GuitarCreateDTO;
@@ -10,56 +11,45 @@ import nl.inholland.myfirstapi.utils.DtoUtils;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
-import java.util.Optional;
 
 @Service
-public class GuitarService
-{
+public class GuitarService {
 
-    GuitarRepository guitarRepository;
+    GuitarRepository repository;
 
-    public GuitarService(GuitarRepository guitarRepository)
-    {
-        this.guitarRepository = guitarRepository;
-        guitarRepository.save(new Guitar("Gibson", "Les Paul"));
-        guitarRepository.save(new Guitar("Fender", "Vintera"));
+    final BrandService brandService;
+
+    public GuitarService(GuitarRepository guitarRepository, BrandService brandService) {
+        this.repository = guitarRepository;
+        this.brandService = brandService;
     }
 
-    public List<Guitar> getAll()
-    {
-        return this.guitarRepository.findAll();
+    public List<Guitar> getAll() {
+        return this.repository.findAll();
     }
 
-    public Optional<Guitar> getOne(long id)
-    {
-        return this.guitarRepository.findById(id);
+    public Guitar getOne(long id) {
+        return this.repository.findById(id).orElseThrow(() -> new ResourceNotFoundException("Guitar with id: " + id + " not found"));
     }
 
-    public DTOEntity createOne(GuitarCreateDTO guitarCreateDTO)
-    {
+    public DTOEntity createOne(GuitarCreateDTO guitarCreateDTO) {
         Guitar guitar = (Guitar) new DtoUtils().convertToEntity(new Guitar(), guitarCreateDTO);
 
-        return new DtoUtils().convertToDto(this.guitarRepository.save(guitar), new GuitarGetDTO());
+        return new DtoUtils().convertToDto(this.repository.save(guitar), new GuitarGetDTO());
     }
 
-    public DTOEntity updateOne(GuitarUpdateDTO guitarUpdateDTO, long id)
-    {
-        Optional<Guitar> dbGuitar = this.getOne(id);
-        if (dbGuitar.isEmpty())
-        {
-            return null;
-        }
+    public boolean updateOne(GuitarUpdateDTO guitarUpdateDTO, long id) {
+        Guitar guitar = this.getOne(id);
 
-        Guitar updateGuitar = (Guitar) new DtoUtils().convertToEntity(new Guitar(), guitarUpdateDTO);
-        Guitar guitar = dbGuitar.get();
-        guitar.setBrand(updateGuitar.getBrand());
-        guitar.setModel(updateGuitar.getModel());
+        guitar.setBrand(brandService.getOne(guitarUpdateDTO.getBrand().getId()));
+        guitar.setModel(guitarUpdateDTO.getModel());
 
-        return new DtoUtils().convertToDto(this.guitarRepository.save(guitar), new GuitarGetDTO());
+        this.repository.save(guitar);
+
+        return true;
     }
 
-    public void deleteOne(long id)
-    {
-        this.guitarRepository.deleteById(id);
+    public void deleteOne(long id) {
+        this.repository.deleteById(id);
     }
 }
